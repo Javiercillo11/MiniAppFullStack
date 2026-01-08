@@ -22,9 +22,6 @@ El objetivo principal es demostrar buenas prácticas, estructura clara y cumplim
 * Guards personalizados
 * Almacenamiento **in-memory** (sin base de datos obligatoria)
 
-### Infraestructura
-
-* **Docker + Docker Compose**
 
 ---
 
@@ -158,3 +155,11 @@ Se utiliza un **HttpInterceptor funcional** (Angular 18) que:
 * Interceptor funcional en lugar de clases (Angular moderno)
 * Sin JWT ni auth real (estrictamente según el enunciado)
 * CSS puro para evitar dependencias innecesarias
+
+---
+
+
+## 🧩Testing
+
+* Se usa Cypress para la parte Frontend (npx cypress open)
+* Se usan test unitarios para la parte Backend (npm run test)
