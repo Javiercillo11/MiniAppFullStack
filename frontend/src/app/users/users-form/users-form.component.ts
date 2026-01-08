@@ -10,6 +10,7 @@ import { HttpErrorResponse } from '@angular/common/http';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './users-form.component.html',
+  styleUrl: './users-form.component.scss'
 })
 export class UsersFormComponent implements OnInit {
   user: Partial<User> = {};

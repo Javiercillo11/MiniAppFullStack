@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './users-list.component.html',
+  styleUrl: './users-list.component.scss'
 })
 export class UsersListComponent implements OnInit {
   users: User[] = [];
