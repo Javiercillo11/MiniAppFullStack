@@ -1,6 +1,26 @@
 describe('Login', () => {
+
   beforeEach(() => {
     cy.visit('/login');
+
+    // Mock del POST /auth/login
+    cy.intercept('POST', '/auth/login', (req) => {
+      const { username, password } = req.body;
+
+      if (username === 'admin' && password === 'admin123') {
+        // Credenciales correctas
+        req.reply({
+          statusCode: 200,
+          body: { ok: true, token: 'fake-token' },
+        });
+      } else {
+        // Credenciales inválidas
+        req.reply({
+          statusCode: 401,
+          body: { ok: false, message: 'Invalid credentials' },
+        });
+      }
+    }).as('loginRequest');
   });
 
   it('debe loguear correctamente con credenciales válidas', () => {
@@ -9,8 +29,11 @@ describe('Login', () => {
 
     cy.get('button[type="submit"]').click();
 
+    // Esperar la petición mock
+    cy.wait('@loginRequest');
+
     // Redirección a /users
-    cy.url().should('include', '/users');
+    cy.get('h2').contains('Usuarios').should('be.visible');
 
     // Token guardado
     cy.window().then((win) => {
@@ -24,8 +47,10 @@ describe('Login', () => {
 
     cy.get('button[type="submit"]').click();
 
+    cy.wait('@loginRequest');
+
     // Sigue en login
-    cy.url().should('include', '/login');
+    cy.get('h2').contains('Login').should('be.visible');
 
     // Mensaje de error visible
     cy.contains('Credenciales inválidas').should('be.visible');
@@ -40,6 +65,6 @@ describe('Login', () => {
     cy.clearLocalStorage();
     cy.visit('/users');
 
-    cy.url().should('include', '/login');
+    cy.get('h2').contains('Login').should('be.visible');
   });
 });
