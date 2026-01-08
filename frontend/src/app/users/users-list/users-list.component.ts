@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { UsersService, User } from '../users.service';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../auth/login/auth.service';
 
 @Component({
   selector: 'app-users-list',
@@ -14,7 +15,7 @@ import { FormsModule } from '@angular/forms';
 export class UsersListComponent implements OnInit {
   users: User[] = [];
 
-  constructor(private usersService: UsersService, private router: Router) {}
+  constructor(private usersService: UsersService, private router: Router, private authService: AuthService) {}
 
   ngOnInit() {
     this.loadUsers();
@@ -42,5 +43,10 @@ export class UsersListComponent implements OnInit {
         error: err => alert('Error eliminando usuario'),
       });
     }
+  }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

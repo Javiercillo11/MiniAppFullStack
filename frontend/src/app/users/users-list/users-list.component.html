@@ -1,34 +1,37 @@
 <div class="page-container">
-  <div class="header">
-    <h2>Usuarios</h2>
-    <button class="primary" (click)="createUser()">Crear usuario</button>
-  </div>
+    <div class="header">
+        <h2>Usuarios</h2>
+        <div class="header-actions">
+            <button class="primary" (click)="createUser()">Crear usuario</button>
+            <button class="secondary" (click)="logout()">Logout</button>
+        </div>
+    </div>
 
-  <div class="table-card">
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Phone</th>
-          <th class="actions">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let user of users">
-          <td>{{ user.name }}</td>
-          <td>{{ user.email }}</td>
-          <td>{{ user.phone }}</td>
-          <td class="actions">
-            <button class="secondary" (click)="editUser(user)">Editar</button>
-            <button class="danger" (click)="deleteUser(user)">Eliminar</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th class="actions">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let user of users">
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.phone }}</td>
+                    <td class="actions">
+                        <button class="secondary" (click)="editUser(user)">Editar</button>
+                        <button class="danger" (click)="deleteUser(user)">Eliminar</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
-    <p *ngIf="users.length === 0" class="empty">
-      No hay usuarios registrados
-    </p>
-  </div>
+        <p *ngIf="users.length === 0" class="empty">
+            No hay usuarios registrados
+        </p>
+    </div>
 </div>
