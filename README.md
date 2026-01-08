@@ -131,37 +131,6 @@ Se utiliza un **HttpInterceptor funcional** (Angular 18) que:
 
 ---
 
-## 🐳 Docker
-
-El proyecto incluye **Docker Compose** para levantar todo fácilmente.
-
-### Estructura
-
-project-root/
-
-├── backend/
-
-│   └── Dockerfile
-
-├── frontend/
-
-│   └── Dockerfile
-
-└── docker-compose.yml
-
-### Levantar el proyecto
-
-docker-compose up **--build**
-
-### URLs
-
-* Frontend → [http://localhost:4200]()
-* Backend → [http://localhost:3000]()
-
-> En entorno Docker, el frontend se comunica con el backend usando el hostname `<span>backend</span>`.
-
----
-
 ## ▶️ Ejecución manual (sin Docker)
 
 ### Backend
