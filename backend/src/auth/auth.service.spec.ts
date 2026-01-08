@@ -12,7 +12,13 @@ describe('AuthService', () => {
     service = module.get<AuthService>(AuthService);
   });
 
-  it('should be defined', () => {
+  it('debe estar definido', () => {
     expect(service).toBeDefined();
+  });
+
+  it('debe retornar token válido si las credenciales son correctas', () => {
+    const res = service.login('admin', 'admin123');
+    expect(res.ok).toBe(true);
+    expect(res.token).toBe('fake-token');
   });
 });
