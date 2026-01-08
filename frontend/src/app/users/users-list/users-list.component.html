@@ -1,0 +1,20 @@
+<h2>Usuarios</h2>
+<button (click)="createUser()">Crear usuario</button>
+
+<table border="1" width="100%" style="margin-top:10px">
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Acciones</th>
+    </tr>
+    <tr *ngFor="let user of users">
+        <td>{{ user.name }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.phone }}</td>
+        <td>
+            <button (click)="editUser(user)">Editar</button>
+            <button (click)="deleteUser(user)">Eliminar</button>
+        </td>
+    </tr>
+</table>

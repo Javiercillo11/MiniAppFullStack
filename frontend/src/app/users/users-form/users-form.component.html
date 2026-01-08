@@ -1,0 +1,23 @@
+<h2>{{ isEdit ? "Editar" : "Crear" }} Usuario</h2>
+
+<form (ngSubmit)="save()">
+  <div>
+    <label>Name</label>
+    <input [(ngModel)]="user.name" name="name" required />
+  </div>
+
+  <div>
+    <label>Email</label>
+    <input [(ngModel)]="user.email" name="email" required type="email" />
+  </div>
+
+  <div>
+    <label>Phone</label>
+    <input [(ngModel)]="user.phone" name="phone" required />
+  </div>
+
+  <p *ngIf="error" style="color: red">{{ error }}</p>
+
+  <button type="submit">{{ isEdit ? "Actualizar" : "Crear" }}</button>
+  <button type="button" (click)="cancel()">Cancelar</button>
+</form>
