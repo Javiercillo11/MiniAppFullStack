@@ -22,6 +22,9 @@ El objetivo principal es demostrar buenas prácticas, estructura clara y cumplim
 * Guards personalizados
 * Almacenamiento **in-memory** (sin base de datos obligatoria)
 
+### Infraestructura
+
+* **Docker + Docker Compose**
 
 ---
 
@@ -128,6 +131,42 @@ Se utiliza un **HttpInterceptor funcional** (Angular 18) que:
 
 ---
 
+## 🐳 Docker
+
+El proyecto incluye **Docker Compose** para levantar todo fácilmente.
+
+### Estructura
+
+project-root/
+
+├── backend/
+
+│   └── Dockerfile
+
+├── frontend/
+
+└── docker-compose.yml
+
+### Levantar el proyecto
+
+docker-compose up **--build** (esto creará el contenedor del back)
+
+**cd** frontend
+
+**npm** install
+
+**ng** serve
+
+
+### URLs
+
+* Frontend → [http://localhost:4200]()
+* Backend → [http://localhost:3000]()
+
+> En entorno Docker, el frontend se comunica con el backend usando el hostname `<span>backend</span>`.
+
+---
+
 ## ▶️ Ejecución manual (sin Docker)
 
 ### Backend
@@ -144,7 +183,7 @@ Se utiliza un **HttpInterceptor funcional** (Angular 18) que:
 
 **npm** install
 
-**npm** **start**
+**ng** serve
 
 ---
 
@@ -158,8 +197,13 @@ Se utiliza un **HttpInterceptor funcional** (Angular 18) que:
 
 ---
 
-
 ## 🧩Testing
 
 * Se usa Cypress para la parte Frontend (npx cypress open)
 * Se usan test unitarios para la parte Backend (npm run test)
+
+---
+
+## 👤 Autor
+
+Javier Sánchez Vargas
