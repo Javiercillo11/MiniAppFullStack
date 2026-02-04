@@ -4,69 +4,75 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { User } from './user.interface';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User } from './schemas/user.schemas';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
-  private users: User[] = [];
-  private idCounter = 1;
+  constructor(
+    @InjectModel(User.name)
+    private readonly userModel: Model<User>,
+  ) {}
 
-  findAll() {
-    return this.users;
+  async findAll() {
+    return this.userModel.find().exec();
   }
 
-  findOne(id: number) {
-    const user = this.users.find((u) => u.id === id);
+  async findOne(id: string) {
+    const user = await this.userModel.findById(id).exec();
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
+
     return user;
   }
 
-  create(dto: CreateUserDto) {
+  async create(dto: CreateUserDto) {
     if (!dto.phone) {
       throw new BadRequestException('Phone is required');
     }
 
-    const phoneExists = this.users.some((u) => u.phone === dto.phone);
+    const phoneExists = await this.userModel.exists({
+      phone: dto.phone,
+    });
+
     if (phoneExists) {
       throw new ConflictException('Phone already exists');
     }
 
-    const newUser: User = {
-      id: this.idCounter++,
-      ...dto,
-    };
-
-    this.users.push(newUser);
+    const newUser = await this.userModel.create(dto);
     return newUser;
   }
 
-  update(id: number, dto: UpdateUserDto) {
-    const user = this.findOne(id);
+  async update(id: string, dto: UpdateUserDto) {
+    const user = await this.findOne(id);
 
-    if (dto.phone !== user.phone) {
-      const phoneExists = this.users.some(
-        (u) => u.phone === dto.phone && u.id !== id,
-      );
+    if (dto.phone && dto.phone !== user.phone) {
+      const phoneExists = await this.userModel.exists({
+        phone: dto.phone,
+        _id: { $ne: id },
+      });
+
       if (phoneExists) {
         throw new ConflictException('Phone already exists');
       }
     }
 
     Object.assign(user, dto);
-    return user;
+    return user.save();
   }
 
-  remove(id: number) {
-    const index = this.users.findIndex((u) => u.id === id);
-    if (index === -1) {
+  async remove(id: string) {
+    const result = await this.userModel.findByIdAndDelete(id);
+
+    if (!result) {
       throw new NotFoundException('User not found');
     }
 
-    this.users.splice(index, 1);
     return { ok: true };
   }
 }
