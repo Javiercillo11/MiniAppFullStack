@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface User {
-  id: number;
+  _id: string;
   name: string;
   email: string;
   phone: string;
@@ -19,7 +19,7 @@ export class UsersService {
     return this.http.get<User[]>(this.api);
   }
 
-  getOne(id: number): Observable<User> {
+  getOne(id: string): Observable<User> {
     return this.http.get<User>(`${this.api}/${id}`);
   }
 
@@ -27,11 +27,11 @@ export class UsersService {
     return this.http.post<User>(this.api, user);
   }
 
-  update(id: number, user: Partial<User>): Observable<User> {
+  update(id: string, user: Partial<User>): Observable<User> {
     return this.http.put<User>(`${this.api}/${id}`, user);
   }
 
-  delete(id: number): Observable<any> {
+  delete(id: string): Observable<any> {
     return this.http.delete(`${this.api}/${id}`);
   }
 }

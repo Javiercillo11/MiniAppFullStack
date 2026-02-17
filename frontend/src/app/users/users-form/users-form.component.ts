@@ -16,7 +16,7 @@ export class UsersFormComponent implements OnInit {
   user: Partial<User> = {};
   error = '';
   isEdit = false;
-  userId?: number;
+  userId?: string;
 
   constructor(
     private usersService: UsersService,
@@ -25,7 +25,7 @@ export class UsersFormComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.userId = Number(this.route.snapshot.params['id']);
+    this.userId = (this.route.snapshot.params['id']);
     if (this.userId) {
       this.isEdit = true;
       this.usersService.getOne(this.userId).subscribe({

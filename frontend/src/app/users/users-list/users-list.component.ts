@@ -33,12 +33,12 @@ export class UsersListComponent implements OnInit {
   }
 
   editUser(user: User) {
-    this.router.navigate(['/users/edit', user.id]);
+    this.router.navigate(['/users/edit', user._id]);
   }
 
   deleteUser(user: User) {
     if (confirm(`¿Eliminar usuario ${user.name}?`)) {
-      this.usersService.delete(user.id).subscribe({
+      this.usersService.delete(user._id).subscribe({
         next: () => this.loadUsers(),
         error: err => alert('Error eliminando usuario'),
       });
