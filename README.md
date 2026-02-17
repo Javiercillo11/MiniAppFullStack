@@ -22,6 +22,9 @@ El objetivo principal es demostrar buenas prácticas, estructura clara y cumplim
 * Guards personalizados
 * Almacenamiento **in-memory** (sin base de datos obligatoria)
 
+### BBDD
+* **MongoDB** para la persistencia de datos
+
 ### Infraestructura
 
 * **Docker + Docker Compose**
@@ -42,7 +45,7 @@ El objetivo principal es demostrar buenas prácticas, estructura clara y cumplim
 * Si falla:
   * Error 401 – Credenciales inválidas
 
-> ⚠️ No se usa JWT ni autenticación real (según consigna)
+> ⚠️ No se usa JWT ni autenticación real
 
 ---
 
