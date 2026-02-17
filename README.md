@@ -149,14 +149,13 @@ project-root/
 
 ### Levantar el proyecto
 
-docker-compose up **--build** (esto creará el contenedor del back)
+docker-compose up **--build** (esto creará el contenedor del back y de la bbdd servida en MongoDB)
 
 **cd** frontend
 
 **npm** install
 
 **ng** serve
-
 
 ### URLs
 
@@ -189,11 +188,10 @@ docker-compose up **--build** (esto creará el contenedor del back)
 
 ## 🧠 Decisiones técnicas
 
-* Se usa **in-memory storage** para simplificar (permitido por la consigna)
+* Se usa **Mongo DB** para la persistencia de datos
 * Angular 18 con **standalone components** por ser la práctica recomendada
 * Interceptor funcional en lugar de clases (Angular moderno)
-* Sin JWT ni auth real (estrictamente según el enunciado)
-* CSS puro para evitar dependencias innecesarias
+* Sin JWT ni auth real
 
 ---
 
