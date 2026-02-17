@@ -166,25 +166,6 @@ docker-compose up **--build** (esto creará el contenedor del back y de la bbdd 
 
 ---
 
-## ▶️ Ejecución manual (sin Docker)
-
-### Backend
-
-**cd** backend
-
-**npm** install
-
-**npm** run **start**
-
-### Frontend
-
-**cd** frontend
-
-**npm** install
-
-**ng** serve
-
----
 
 ## 🧠 Decisiones técnicas
 
