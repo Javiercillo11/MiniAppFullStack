@@ -1,86 +1,21 @@
 .form-container {
-  min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
-  background: #f4f6f8;
+  margin-top: 3rem;
 }
 
-.user-card {
+.form-card {
+  width: 450px;
+  padding: 2rem;
+}
+
+.full-width {
   width: 100%;
-  max-width: 420px;
-  padding: 24px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.user-card h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #333;
-}
-
-.form-group {
-  margin-bottom: 16px;
-}
-
-.form-group label {
-  display: block;
-  font-size: 14px;
-  margin-bottom: 6px;
-  color: #555;
-}
-
-.form-group input {
-  width: 95%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.form-group input:focus {
-  outline: none;
-  border-color: #1976d2;
+  margin-bottom: 1rem;
 }
 
 .actions {
   display: flex;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-button {
-  flex: 1;
-  padding: 10px;
-  font-size: 14px;
-  border-radius: 4px;
-  cursor: pointer;
-  border: none;
-}
-
-button.primary {
-  background: #1976d2;
-  color: white;
-}
-
-button.primary:hover {
-  background: #125ea5;
-}
-
-button.secondary {
-  background: #e0e0e0;
-  color: #333;
-}
-
-button.secondary:hover {
-  background: #c7c7c7;
-}
-
-.error {
-  margin-top: 10px;
-  color: #d32f2f;
-  text-align: center;
-  font-size: 14px;
+  justify-content: space-between;
+  margin-top: 1rem;
 }
