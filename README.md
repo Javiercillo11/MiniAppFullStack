@@ -8,26 +8,36 @@ El objetivo principal es demostrar buenas prácticas, estructura clara y cumplim
 
 ## 🧩 Stack Tecnológico
 
-### Frontend
+### 🎨 Frontend
 
 * **Angular 18** (Standalone Components)
+* **Angular Material** (UI moderna y accesible)
 * Angular Router
 * HttpClient + Interceptor funcional
-* CSS puro (sin librerías externas)
+* Guards de protección de rutas
+* Servido en producción con **Nginx**
+* Dockerizado
 
-### Backend
+### 🧠 Backend
 
 * **NestJS 9**
 * Arquitectura modular
+* DTOs con validación (`class-validator`)
 * Guards personalizados
-* Almacenamiento **in-memory** (sin base de datos obligatoria)
+* Conexión real a MongoDB con Mongoose
+* Dockerizado
 
-### BBDD
-* **MongoDB** para la persistencia de datos
+### 🗄 BBDD
 
-### Infraestructura
+* **MongoDB 6**
+* Persistencia real
+* Validación de unicidad del campo `phone`
 
-* **Docker + Docker Compose**
+### 🐳 Infraestructura
+
+* **Docker**
+* **Docker Compose**
+* Nginx para servir Angular en producción
 
 ---
 
@@ -141,48 +151,66 @@ El proyecto incluye **Docker Compose** para levantar todo fácilmente.
 ### Estructura
 
 project-root/
-
+│
 ├── backend/
-
 │   └── Dockerfile
-
+│
 ├── frontend/
-
+│   ├── Dockerfile
+│   └── nginx.conf
+│
 └── docker-compose.yml
 
 ### Levantar el proyecto
 
-docker-compose up **--build** (esto creará el contenedor del back y de la bbdd servida en MongoDB)
+docker-compose up **--build** (esto creará los contenedores de front servido con Nginx, back y bbdd usando MongoBD)
 
-**cd** frontend
+### URLs en Docker
 
-**npm** install
+* Frontend → [http://localhost](http://localhost)
+* Backend → [http://localhost:3000](http://localhost:3000)
+* MongoDB → mongodb://localhost:27017
 
-**ng** serve
-
-### URLs
-
-* Frontend → [http://localhost:4200]()
-* Backend → [http://localhost:3000]()
-
-> En entorno Docker, el frontend se comunica con el backend usando el hostname `<span>backend</span>`.
+En entorno Docker, el frontend se comunica con el backend usando: http://backend:3000 (dentro de la red de Docker)
 
 ---
 
-
 ## 🧠 Decisiones técnicas
 
-* Se usa **Mongo DB** para la persistencia de datos
-* Angular 18 con **standalone components** por ser la práctica recomendada
-* Interceptor funcional en lugar de clases (Angular moderno)
-* Sin JWT ni auth real
+* MongoDB para persistencia real
+* Angular 18 con standalone components
+* Angular Material para UI profesional
+* Interceptor funcional moderno
+* Nginx para servir frontend en producción
+* Docker para entorno reproducible
+* Sin JWT por requerimiento del ejercicio
 
 ---
 
 ## 🧩Testing
 
-* Se usa Cypress para la parte Frontend (npx cypress open)
-* Se usan test unitarios para la parte Backend (npm run test)
+#### Frontend
+
+Cypress E2E con:
+
+* Mock de login
+* CRUD
+* Validaciones
+* Guards
+
+Si el frontend corre en Docker (puerto 80), configurar: baseUrl: 'http://localhost'
+
+##### Probar test
+
+* npx cypress open
+
+#### Backend
+
+Se usan test unitarios con Jest´
+
+##### Probar test
+
+* npm run test
 
 ---
 
