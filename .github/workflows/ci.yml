@@ -27,8 +27,8 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -49,8 +49,8 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -64,19 +64,29 @@ jobs:
     runs-on: ubuntu-latest
     needs: frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - uses: cypress-io/github-action@v6
-        with:
-          working-directory: frontend
-          start: npm start
-          wait-on: http://localhost:4200
-          wait-on-timeout: 180
-      - uses: actions/upload-artifact@v4
+      - run: npm ci
+        working-directory: frontend
+      # Servidor de desarrollo en IPv4 explícito (evita que localhost resuelva a ::1)
+      - name: Arrancar servidor de desarrollo
+        working-directory: frontend
+        run: |
+          npx ng serve --host 127.0.0.1 --port 4200 > ng-serve.log 2>&1 &
+          npx --yes wait-on@8 --timeout 180000 http-get://127.0.0.1:4200
+      - name: Tests Cypress
+        working-directory: frontend
+        run: npx cypress run
+        env:
+          CYPRESS_BASE_URL: http://127.0.0.1:4200
+      - name: Log del servidor
+        if: failure()
+        run: cat frontend/ng-serve.log
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: cypress-screenshots
@@ -87,5 +97,5 @@ jobs:
     name: Imágenes Docker
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: docker compose build
