@@ -1,8 +1,36 @@
-# Mini App Fullstack – Angular 18 + NestJS 9
+# Mini App Fullstack – Angular 18 + NestJS 11
 
-Este proyecto es una **mini aplicación fullstack** desarrollada como ejercicio técnico, que incluye  **autenticación JWT con roles** ,  **CRUD de usuarios** , validaciones de negocio y comunicación **HTTP REST** entre frontend y backend.
+[![CI](https://github.com/Javiercillo11/MiniAppFullStack/actions/workflows/ci.yml/badge.svg)](https://github.com/Javiercillo11/MiniAppFullStack/actions/workflows/ci.yml)
 
-El objetivo principal es demostrar buenas prácticas, estructura clara y cumplimiento estricto del enunciado, sin sobreingeniería.
+Aplicación fullstack de **gestión de usuarios** con **autenticación JWT en cookies httpOnly**, **roles y permisos**, **estado activo/inactivo**, validaciones de negocio y una interfaz profesional con **modo oscuro**, comunicada por **HTTP REST** entre frontend y backend.
+
+---
+
+## 🚀 Inicio rápido
+
+```bash
+docker compose up -d --build
+```
+
+Abrir [http://localhost](http://localhost) e iniciar sesión con:
+
+* **Email:** `admin@miniapp.local`
+* **Contraseña:** `admin123` (se pedirá cambiarla en el primer acceso)
+
+> En producción, copiar `.env.example` a `.env` y cambiar todos los secretos antes de arrancar.
+
+---
+
+## ✨ Funcionalidades principales
+
+* 🔐 Login por email con JWT en cookies `httpOnly`, renovación automática de sesión y logout real
+* 👥 CRUD de usuarios con búsqueda, filtro por estado y acciones según permisos
+* 🛡 Roles **Administrador**, **Editor** y **Lector**, validados en el backend
+* ⏸ Activar / desactivar usuarios con efecto inmediato (y opción de deshacer)
+* 🔑 Cambio de contraseña obligatorio en el primer acceso y tras un restablecimiento
+* 🚦 Límite de intentos de login y cabeceras de seguridad
+* 🌗 Tema claro, oscuro o del sistema; diseño adaptado a móvil
+* ✅ Tests unitarios y e2e en backend y frontend, con CI en GitHub Actions
 
 ---
 
@@ -10,34 +38,36 @@ El objetivo principal es demostrar buenas prácticas, estructura clara y cumplim
 
 ### 🎨 Frontend
 
-* **Angular 18** (Standalone Components)
-* **Angular Material** (UI moderna y accesible)
-* Angular Router
-* HttpClient + Interceptor funcional
-* Guards de protección de rutas
+* **Angular 18** (standalone components y signals)
+* **Angular Material 18** con tema **Material 3** personalizado (claro y oscuro)
+* Tipografía IBM Plex Sans e iconos Material Symbols
+* Angular Router con guards de sesión, roles y cambio de contraseña
+* HttpClient + interceptor funcional (refresco de sesión y manejo de errores)
 * Servido en producción con **Nginx**
-* Dockerizado
+* Tests unitarios con **Karma/Jasmine** y e2e con **Cypress**
 
 ### 🧠 Backend
 
-* **NestJS 9**
-* Arquitectura modular
+* **NestJS 11** con arquitectura modular
 * DTOs con validación (`class-validator`)
-* Guards personalizados
-* Conexión real a MongoDB con Mongoose
-* Dockerizado
+* **JWT** (`@nestjs/jwt`) y contraseñas con **bcrypt**
+* Guards de autenticación (`JwtAuthGuard`) y de roles (`RolesGuard`)
+* **helmet**, **cookie-parser** y rate limiting con **@nestjs/throttler**
+* MongoDB con **Mongoose**
+* Tests unitarios y e2e con **Jest** + **Supertest**
 
 ### 🗄 BBDD
 
-* **MongoDB 6**
+* **MongoDB 6** con autenticación
 * Persistencia real
-* Validación de unicidad del campo `phone`
+* Unicidad de `email` y `phone`
 
 ### 🐳 Infraestructura
 
-* **Docker**
-* **Docker Compose**
-* Nginx para servir Angular en producción
+* **Docker** (imágenes multi-stage con Node 22, sin root)
+* **Docker Compose** con healthchecks y servicios internos sin puertos publicados
+* **Nginx** como servidor del frontend y proxy de la API (`/api`)
+* **GitHub Actions** para integración continua
 
 ---
 
@@ -183,9 +213,13 @@ Se utiliza un **HttpInterceptor funcional** (Angular 18) que:
 
 ## 🎨 Interfaz
 
-* Tema claro, oscuro o del sistema (selector en la barra lateral; se recuerda la elección)
-* Diseño adaptado a móvil
-* Página 404 para rutas inexistentes
+* **Login** dividido: panel de marca y formulario con validación y mensajes de error claros
+* **Barra lateral** con navegación, usuario conectado y su rol, cambio de contraseña y cierre de sesión (en móvil se convierte en menú desplegable)
+* **Listado** con avatares, etiquetas de rol y estado, búsqueda, filtro Todos/Activos/Inactivos y menú de acciones por fila
+* **Formulario** por secciones (información personal, acceso y permisos) con explicación de cada rol
+* **Cambio de contraseña** con confirmación, también en modo obligatorio
+* **Tema** claro, oscuro o del sistema (selector en la barra lateral; se recuerda la elección)
+* Diseño adaptado a móvil, página **404** y avisos (snackbars) de éxito y error
 
 ---
 
@@ -195,6 +229,7 @@ El proyecto incluye **Docker Compose** para levantar todo fácilmente.
 
 ### Estructura
 
+```text
 project-root/
 │
 ├── .github/workflows/ci.yml
@@ -206,6 +241,7 @@ project-root/
 ├── docker-compose.yml       (producción / uso normal)
 ├── docker-compose.dev.yml   (expone MongoDB y backend en 127.0.0.1)
 └── .env.example
+```
 
 ### Levantar el proyecto
 
@@ -234,8 +270,10 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 
 * MongoDB para persistencia real
 * Angular 18 con standalone components
-* Angular Material para UI profesional
+* Angular Material 3 con tokens de diseño propios (CSS variables) para el modo oscuro
 * Interceptor funcional moderno
+* Sesión sin tokens accesibles desde JavaScript (protección frente a XSS)
+* Permisos validados siempre en el backend; el frontend solo adapta la interfaz
 * Nginx para servir frontend en producción
 * Docker para entorno reproducible
 * JWT en cookies httpOnly con refresh token y revocación por versión
