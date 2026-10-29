@@ -1,6 +1,6 @@
 # Mini App Fullstack – Angular 18 + NestJS 9
 
-Este proyecto es una **mini aplicación fullstack** desarrollada como ejercicio técnico, que incluye  **login fake** ,  **CRUD de usuarios** , validaciones de negocio y comunicación **HTTP REST** entre frontend y backend.
+Este proyecto es una **mini aplicación fullstack** desarrollada como ejercicio técnico, que incluye  **autenticación JWT con roles** ,  **CRUD de usuarios** , validaciones de negocio y comunicación **HTTP REST** entre frontend y backend.
 
 El objetivo principal es demostrar buenas prácticas, estructura clara y cumplimiento estricto del enunciado, sin sobreingeniería.
 
@@ -43,31 +43,71 @@ El objetivo principal es demostrar buenas prácticas, estructura clara y cumplim
 
 ## 🔐 Funcionalidades
 
-### Autenticación (Fake)
+### Autenticación (JWT en cookies httpOnly)
 
-* Login con usuario y contraseña hardcodeados
-* Credenciales válidas:
-  * **username:**`<span>admin</span>`
-  * **password:**`<span>admin123</span>`
-* Si es correcto:
-  * Se devuelve un token fijo `<span>fake-token</span>`
-  * Se guarda en `<span>localStorage</span>`
-* Si falla:
-  * Error 401 – Credenciales inválidas
+* Login con **email y contraseña** contra los usuarios de MongoDB
+* Contraseñas almacenadas con hash **bcrypt** (nunca se devuelven en la API)
+* La sesión usa dos JWT en **cookies `httpOnly` + `SameSite=Strict`** (el JavaScript del navegador no puede leerlos):
+  * `access_token`: 15 minutos
+  * `refresh_token`: 7 días; el frontend renueva la sesión automáticamente al caducar el de acceso
+* **Logout real**: invalida en el servidor todos los tokens del usuario (versión de token en BBDD)
+* **Límite de intentos**: 5 logins por minuto e IP (`429 Too Many Requests`); límite general de 120 peticiones/minuto
+* Cabeceras de seguridad con **helmet** (API) y Nginx (frontend)
+* Respuestas de error:
+  * `401` – Credenciales inválidas
+  * `403` – Usuario desactivado
+  * `429` – Demasiados intentos
+* Al arrancar, si no existe ningún administrador se crea uno inicial (`admin@miniapp.local` / `admin123`).
+  **En el primer acceso se obliga a cambiar la contraseña.**
+* También se obliga a cambiarla cuando la contraseña la fija otra persona (alta de usuario o restablecimiento por un administrador); en ese caso además se cierran sus sesiones abiertas.
 
-> ⚠️ No se usa JWT ni autenticación real
+Variables de entorno (ver `.env.example`; copiar a `.env` y cambiarlas en producción):
+
+| Variable | Descripción | Por defecto |
+| --- | --- | --- |
+| `MONGO_USER` / `MONGO_PASSWORD` | Credenciales de MongoDB | `miniapp` / `miniapp-dev-password` ⚠️ |
+| `JWT_SECRET` | Secreto del token de acceso | `dev-secret-change-me` ⚠️ |
+| `JWT_REFRESH_SECRET` | Secreto del token de refresco | `dev-refresh-secret-change-me` ⚠️ |
+| `COOKIE_SECURE` | `true` si se sirve por HTTPS | `false` |
+| `CORS_ORIGIN` | Orígenes permitidos (separados por comas) | `http://localhost:4200` |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Administrador inicial | `admin@miniapp.local` / `admin123` |
+| `LOGIN_RATE_LIMIT` | Intentos de login por minuto e IP | `5` |
+
+---
+
+### Roles y permisos
+
+| Acción | Administrador | Editor | Lector |
+| --- | :-: | :-: | :-: |
+| Ver usuarios | ✅ | ✅ | ✅ |
+| Crear / editar usuarios | ✅ | ✅ (no administradores) | ❌ |
+| Asignar rol de administrador | ✅ | ❌ | ❌ |
+| Activar / desactivar | ✅ | ❌ | ❌ |
+| Eliminar | ✅ | ❌ | ❌ |
+
+Reglas adicionales:
+
+* Nadie puede cambiar su propio rol o estado ni eliminarse a sí mismo
+* Siempre debe quedar al menos un administrador activo
+* Los permisos se validan en el backend (guards `JwtAuthGuard` + `RolesGuard`); el frontend solo oculta lo que no se puede hacer
+
+### Estado activo / inactivo
+
+* Un usuario **inactivo** no puede iniciar sesión
+* La desactivación tiene efecto inmediato: el guard consulta la BBDD en cada petición, así que una sesión abierta se invalida en la siguiente llamada y el frontend redirige al login
 
 ---
 
 ### Protección de rutas
 
-* Todas las rutas `<span>/users</span>` están protegidas
-* Guard de frontend:
-  * Si no hay token → redirige a `<span>/login</span>`
-* Guard de backend:
-  * Requiere header:
-
-    Authorization: Bearer fake-token
+* Todas las rutas `/users` están protegidas
+* Guards de frontend:
+  * Sin sesión → redirige a `/login`
+  * Cambio de contraseña pendiente → redirige a `/change-password`
+  * `/users/create` y `/users/edit/:id` solo para Administrador y Editor
+* Guard de backend (`JwtAuthGuard`):
+  * Lee el JWT de la cookie `access_token` (o de `Authorization: Bearer <jwt>` para clientes de API)
+  * Comprueba en BBDD que el usuario sigue activo y que el token no se ha invalidado
 
 ---
 
@@ -75,35 +115,29 @@ El objetivo principal es demostrar buenas prácticas, estructura clara y cumplim
 
 ### Entidad User
 
-* `<span>id</span>` (autogenerado)
-* `<span>name</span>` (obligatorio)
-* `<span>email</span>` (obligatorio, formato email)
-* `<span>phone</span>` (obligatorio y  **único** )
+* `_id` (autogenerado)
+* `name` (obligatorio)
+* `email` (obligatorio, formato email y **único**)
+* `phone` (obligatorio y **único**)
+* `password` (mínimo 8 caracteres, hash bcrypt)
+* `role` (`admin` | `editor` | `viewer`, por defecto `viewer`)
+* `status` (`active` | `inactive`, por defecto `active`)
+* `lastLoginAt`, `createdAt`, `updatedAt`
 
 ### Funcionalidades
 
-* Listado de usuarios (tabla)
-* Crear usuario
-* Editar usuario
+* Listado de usuarios con búsqueda y filtro por estado
+* Crear y editar usuario (con rol, estado y contraseña)
+* Activar / desactivar usuario (con opción de deshacer)
 * Eliminar usuario (con confirmación)
-
-### Reglas de negocio
-
-* `<span>phone</span>` obligatorio
-* `<span>phone</span>` único
-  * Al crear → `<span>409 Conflict</span>` si existe
-  * Al editar → `<span>409 Conflict</span>` si pertenece a otro usuario
 
 ### Manejo de errores
 
-* `<span>400</span>` → Campos obligatorios faltantes
-* `<span>401</span>` → No autorizado
-* `<span>404</span>` → Usuario no encontrado
-* `<span>409</span>` → Teléfono duplicado
-
-En frontend, el error 409 se muestra como:
-
-> **“Teléfono ya existe”**
+* `400` → Campos obligatorios faltantes o se quedaría sin administradores activos
+* `401` → No autenticado o token inválido
+* `403` → Sin permisos para la acción o usuario desactivado
+* `404` → Usuario no encontrado
+* `409` → Email o teléfono duplicado
 
 ---
 
@@ -111,15 +145,20 @@ En frontend, el error 409 se muestra como:
 
 ### Auth
 
-* `<span>POST /auth/login</span>`
+* `POST /auth/login`
+* `POST /auth/refresh`
+* `POST /auth/logout`
+* `POST /auth/change-password`
+* `GET /auth/me`
 
 ### Users (protegidos)
 
-* `<span>GET /users</span>`
-* `<span>GET /users/:id</span>`
-* `<span>POST /users</span>`
-* `<span>PUT /users/:id</span>`
-* `<span>DELETE /users/:id</span>`
+* `GET /users`
+* `GET /users/:id`
+* `POST /users` (admin, editor)
+* `PUT /users/:id` (admin, editor)
+* `PATCH /users/:id/status` (admin)
+* `DELETE /users/:id` (admin)
 
 ---
 
@@ -127,20 +166,26 @@ En frontend, el error 409 se muestra como:
 
 Se utiliza un **HttpInterceptor funcional** (Angular 18) que:
 
-* Lee el token desde `<span>localStorage</span>`
-* Inyecta automáticamente:
-
-  Authorization: Bearer fake-token
-* Evita repetir lógica en cada request
+* Envía las cookies de sesión en cada petición
+* Ante un `401` renueva la sesión con `/auth/refresh` y repite la petición; si no puede, redirige al login
+* Ante un `403` por cambio de contraseña pendiente redirige a `/change-password`
+* Muestra un aviso si no hay conexión con el servidor
 
 ---
 
 ## 🚪 Logout
 
-* Botón visible en el listado de usuarios
-* Elimina el token del `<span>localStorage</span>`
-* Redirige a `<span>/login</span>`
-* El guard impide volver a rutas protegidas
+* Botón en la barra lateral
+* Invalida los tokens en el servidor y borra las cookies
+* Redirige a `/login`
+
+---
+
+## 🎨 Interfaz
+
+* Tema claro, oscuro o del sistema (selector en la barra lateral; se recuerda la elección)
+* Diseño adaptado a móvil
+* Página 404 para rutas inexistentes
 
 ---
 
@@ -152,26 +197,36 @@ El proyecto incluye **Docker Compose** para levantar todo fácilmente.
 
 project-root/
 │
+├── .github/workflows/ci.yml
 ├── backend/
-│   └── Dockerfile
-│
+│   └── Dockerfile          (Node 22, multi-stage, usuario sin privilegios)
 ├── frontend/
 │   ├── Dockerfile
 │   └── nginx.conf
-│
-└── docker-compose.yml
+├── docker-compose.yml       (producción / uso normal)
+├── docker-compose.dev.yml   (expone MongoDB y backend en 127.0.0.1)
+└── .env.example
 
 ### Levantar el proyecto
 
-docker-compose up **--build** (esto creará los contenedores de front servido con Nginx, back y bbdd usando MongoBD)
+```bash
+cp .env.example .env   # opcional en local; obligatorio en producción
+docker compose up -d --build
+```
 
 ### URLs en Docker
 
 * Frontend → [http://localhost](http://localhost)
-* Backend → [http://localhost:3000](http://localhost:3000)
-* MongoDB → mongodb://localhost:27017
+* API → [http://localhost/api](http://localhost/api) (a través de Nginx)
 
-En entorno Docker, el frontend se comunica con el backend usando: http://backend:3000 (dentro de la red de Docker)
+MongoDB y el backend **no publican puertos**: solo son accesibles desde la red interna de Docker.
+Para desarrollo local (backend con `npm run start:dev` o tests e2e):
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+# MongoDB → mongodb://miniapp:miniapp-dev-password@localhost:27017/?authSource=admin
+# Backend → http://localhost:3000 (cambiar con BACKEND_PORT)
+```
 
 ---
 
@@ -183,34 +238,40 @@ En entorno Docker, el frontend se comunica con el backend usando: http://backend
 * Interceptor funcional moderno
 * Nginx para servir frontend en producción
 * Docker para entorno reproducible
-* Sin JWT por requerimiento del ejercicio
+* JWT en cookies httpOnly con refresh token y revocación por versión
+* Rate limiting con `@nestjs/throttler`
 
 ---
 
-## 🧩Testing
+## 🧩 Testing
 
-#### Frontend
+### Integración continua
 
-Cypress E2E con:
+GitHub Actions (`.github/workflows/ci.yml`) ejecuta en cada push a `main` y en cada PR:
 
-* Mock de login
-* CRUD
-* Validaciones
-* Guards
+* Backend: lint, tests unitarios, build y tests e2e contra MongoDB
+* Frontend: build y tests unitarios (Karma + Chrome headless)
+* Cypress contra el servidor de desarrollo
+* Build de las imágenes Docker
 
-Si el frontend corre en Docker (puerto 80), configurar: baseUrl: 'http://localhost'
+### Frontend
 
-##### Probar test
+```bash
+cd frontend
+npm run test:ci   # tests unitarios (Karma, Chrome headless)
+npm start         # en otra terminal, para Cypress
+npm run cy:run    # Cypress (API mockeada)
+```
 
-* npx cypress open
+### Backend
 
-#### Backend
-
-Se usan test unitarios con Jest´
-
-##### Probar test
-
-* npm run test
+```bash
+cd backend
+npm test          # tests unitarios
+# e2e: requiere MongoDB (docker-compose.dev.yml) y una BBDD de pruebas, que se vacía
+MONGO_URI="mongodb://miniapp:miniapp-dev-password@localhost:27017/miniapp-test?authSource=admin" \
+  npm run test:e2e -- --runInBand
+```
 
 ---
 

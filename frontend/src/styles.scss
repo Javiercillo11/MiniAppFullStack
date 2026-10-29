@@ -1,4 +1,203 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+// ------------------------------------------------------------
+// Tema Material 3
+// ------------------------------------------------------------
+$app-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$azure-palette,
+    tertiary: mat.$blue-palette,
+  ),
+  typography: (
+    brand-family: 'IBM Plex Sans',
+    plain-family: 'IBM Plex Sans',
+  ),
+  density: (
+    scale: -1,
+  ),
+));
+
+$app-dark-theme: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: mat.$azure-palette,
+    tertiary: mat.$blue-palette,
+  ),
+  typography: (
+    brand-family: 'IBM Plex Sans',
+    plain-family: 'IBM Plex Sans',
+  ),
+  density: (
+    scale: -1,
+  ),
+));
+
+@include mat.core();
+
+html {
+  @include mat.all-component-themes($app-theme);
+}
+
+html[data-theme='dark'] {
+  @include mat.all-component-colors($app-dark-theme);
+
+  .btn-danger {
+    @include mat.button-color($app-dark-theme, $color-variant: error);
+  }
+  .icon-btn-danger {
+    @include mat.icon-button-color($app-dark-theme, $color-variant: error);
+  }
+}
+
+// Variante de color "error" para acciones destructivas
+.btn-danger {
+  @include mat.button-color($app-theme, $color-variant: error);
+}
+.icon-btn-danger {
+  @include mat.icon-button-color($app-theme, $color-variant: error);
+}
+
+// ------------------------------------------------------------
+// Tokens de diseño
+// ------------------------------------------------------------
+:root {
+  color-scheme: light;
+  --app-bg: #f5f7fb;
+  --app-surface: #ffffff;
+  --app-surface-subtle: #f8fafc;
+  --app-border: #e4e8f0;
+  --app-border-strong: #cfd6e3;
+  --app-text: #0f172a;
+  --app-text-muted: #64748b;
+  --app-primary: #1f5fbf;
+  --app-primary-soft: #e8f0fc;
+  --app-danger: #c62828;
+  --app-danger-soft: #fdecec;
+  --app-success: #15803d;
+  --app-success-dot: #16a34a;
+  --app-neutral: #94a3b8;
+  --app-role-admin-bg: #f1ebfe;
+  --app-role-admin-fg: #6d28d9;
+  --app-role-viewer-bg: #eef1f5;
+  --app-role-viewer-fg: #475569;
+  --app-sidebar: #0f172a;
+  --app-sidebar-text: #cbd5e1;
+  --app-sidebar-active: #1e293b;
+
+  --app-radius: 10px;
+  --app-radius-sm: 8px;
+  --app-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --app-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(15, 23, 42, 0.06);
+
+  // Forma de los componentes Material
+  --mdc-outlined-text-field-container-shape: var(--app-radius-sm);
+  --mdc-filled-button-container-shape: var(--app-radius-sm);
+  --mdc-protected-button-container-shape: var(--app-radius-sm);
+  --mdc-outlined-button-container-shape: var(--app-radius-sm);
+  --mdc-text-button-container-shape: var(--app-radius-sm);
+  --mdc-dialog-container-shape: var(--app-radius);
+  --mdc-snackbar-container-shape: var(--app-radius-sm);
+  --mat-table-background-color: transparent;
+  --mdc-dialog-container-color: var(--app-surface);
+  --mdc-dialog-subhead-size: 1.25rem;
+  --mdc-dialog-subhead-weight: 600;
+
+  // Tracking más compacto que el de M3 por defecto
+  --mat-form-field-container-text-tracking: normal;
+  --mat-form-field-subscript-text-tracking: normal;
+  --mdc-outlined-text-field-label-text-tracking: normal;
+  --mdc-filled-button-label-text-tracking: normal;
+  --mdc-outlined-button-label-text-tracking: normal;
+  --mdc-protected-button-label-text-tracking: normal;
+  --mdc-text-button-label-text-tracking: normal;
+  --mat-table-row-item-label-text-tracking: normal;
+  --mat-table-header-headline-tracking: 0.04em;
+  --mdc-dialog-subhead-tracking: -0.01em;
+  --mdc-dialog-supporting-text-tracking: normal;
+  --mdc-snackbar-supporting-text-tracking: normal;
+}
+
+// Modo oscuro (solo se redefinen los tokens)
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --app-bg: #0b1120;
+  --app-surface: #131c2e;
+  --app-surface-subtle: #172238;
+  --app-border: #222e44;
+  --app-border-strong: #33425c;
+  --app-text: #e5e9f0;
+  --app-text-muted: #94a3b8;
+  --app-primary: #7cb4ff;
+  --app-primary-soft: rgba(124, 180, 255, 0.14);
+  --app-danger: #f87171;
+  --app-danger-soft: rgba(248, 113, 113, 0.12);
+  --app-success: #4ade80;
+  --app-success-dot: #22c55e;
+  --app-neutral: #64748b;
+  --app-role-admin-bg: rgba(167, 139, 250, 0.16);
+  --app-role-admin-fg: #c4b5fd;
+  --app-role-viewer-bg: rgba(148, 163, 184, 0.14);
+  --app-role-viewer-fg: #cbd5e1;
+  --app-sidebar: #080d18;
+  --app-sidebar-active: #18233a;
+  --app-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --app-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  // El tema oscuro de Material redefine estos tokens: se vuelven a fijar
+  --mat-table-background-color: transparent;
+  --mdc-dialog-container-color: var(--app-surface);
+  --mat-menu-container-color: var(--app-surface-subtle);
+  --mat-select-panel-background-color: var(--app-surface-subtle);
+}
+
+// ------------------------------------------------------------
+// Base
+// ------------------------------------------------------------
+*, *::before, *::after { box-sizing: border-box; }
 
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+body {
+  margin: 0;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  color: var(--app-text);
+  background: var(--app-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { margin: 0; letter-spacing: -0.01em; }
+
+// ------------------------------------------------------------
+// Utilidades compartidas
+// ------------------------------------------------------------
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+
+  h1 { font-size: 1.625rem; font-weight: 700; }
+  p { margin: 4px 0 0; color: var(--app-text-muted); font-size: 0.9375rem; }
+}
+
+.panel {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  box-shadow: var(--app-shadow-sm);
+}
+
+.full-width { width: 100%; }
+
+// Snackbars
+.snack-success {
+  --mdc-snackbar-container-color: #14532d;
+  --mat-snack-bar-button-color: #bbf7d0;
+}
+.snack-error {
+  --mdc-snackbar-container-color: #7f1d1d;
+  --mat-snack-bar-button-color: #fecaca;
+}

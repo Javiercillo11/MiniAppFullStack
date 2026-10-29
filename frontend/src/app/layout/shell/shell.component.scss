@@ -1,0 +1,211 @@
+.shell {
+  height: 100vh;
+  background: var(--app-bg);
+}
+
+// ---------------- Sidebar ----------------
+.sidebar {
+  width: 248px;
+  border: none;
+  border-radius: 0;
+  background: var(--app-sidebar);
+  color: var(--app-sidebar-text);
+  border-right: 1px solid var(--app-border);
+
+  ::ng-deep .mat-drawer-inner-container {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 20px 24px;
+}
+
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--app-radius-sm);
+  display: grid;
+  place-items: center;
+  background: var(--app-primary);
+  color: #fff;
+
+  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.brand-name {
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.brand-sub {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 12px;
+  flex: 1;
+}
+
+.nav-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+  padding: 8px 12px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--app-radius-sm);
+  color: var(--app-sidebar-text);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+
+  &:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
+
+  &.active {
+    background: var(--app-sidebar-active);
+    color: #fff;
+    box-shadow: inset 3px 0 0 #60a5fa;
+  }
+}
+
+.theme-switch {
+  display: flex;
+  gap: 2px;
+  margin: 0 24px;
+  padding: 3px;
+  border-radius: var(--app-radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.theme-option {
+  flex: 1;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+  &:hover { color: #fff; }
+
+  &.selected {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  &:focus-visible { outline: 2px solid #60a5fa; outline-offset: 1px; }
+}
+
+.sidebar-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0;
+  margin: 12px;
+  padding: 12px 4px 12px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.profile {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #334155;
+  color: #e2e8f0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.profile-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.profile-name {
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.profile-role { color: #94a3b8; font-size: 0.75rem; }
+
+.footer-action {
+  --mdc-icon-button-icon-color: #94a3b8;
+  &:hover { --mdc-icon-button-icon-color: #fff; }
+}
+
+// ---------------- Contenido ----------------
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 56px;
+  padding: 0 8px;
+  background: var(--app-surface);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.topbar-title { font-weight: 700; }
+
+.main {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 40px 48px;
+
+  @media (max-width: 959px) { padding: 24px 16px 40px; }
+}

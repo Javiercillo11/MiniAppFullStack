@@ -1,20 +1,19 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { configureApp } from './app.setup';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.enableCors({
-    origin: 'http://localhost:4200',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type, Authorization',
-  });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  configureApp(app);
+
+  if (!process.env.JWT_SECRET) {
+    new Logger('Bootstrap').warn(
+      'JWT_SECRET no definido: usando un secreto de desarrollo',
+    );
+  }
+
   await app.listen(process.env.PORT ?? 3000);
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-    }),
-  );
 }
-bootstrap();
+void bootstrap();

@@ -1,4 +1,4 @@
-describe('Formulario Usuario (Angular Material)', () => {
+describe('Formulario de usuario', () => {
 
   const mockUser = {
     name: 'Javier Sanchez',
@@ -8,39 +8,26 @@ describe('Formulario Usuario (Angular Material)', () => {
 
   beforeEach(() => {
 
-    // Simular login correcto
-    cy.intercept('POST', '/auth/login', {
-      statusCode: 200,
-      body: { ok: true, token: 'fake-token' }
-    }).as('login');
-
     // Mock listado vacío
-    cy.intercept('GET', '/users', []).as('getUsers');
+    cy.intercept('GET', '/api/users', []).as('getUsers');
 
     // Mock creación exitosa
-    cy.intercept('POST', '/users', (req) => {
+    cy.intercept('POST', '/api/users', (req) => {
       req.reply({
         statusCode: 201,
         body: { _id: '123', ...req.body }
       });
     }).as('createUser');
 
-    // Ir a login
-    cy.visit('/login');
-
-    cy.get('input[name="username"]').type('admin');
-    cy.get('input[name="password"]').type('admin123');
-    cy.get('button[type="submit"]').click();
-
-    cy.wait('@login');
+    cy.loginAs();
 
     // Esperar redirección
     cy.contains('Usuarios').should('be.visible');
 
     // Ir a crear usuario
-    cy.contains('Crear usuario').click();
+    cy.contains('button', 'Crear usuario').click();
 
-    cy.contains('Crear Usuario').should('be.visible');
+    cy.contains('h1', 'Crear usuario').should('be.visible');
   });
 
   it('debe crear un usuario con datos válidos', () => {
@@ -49,30 +36,31 @@ describe('Formulario Usuario (Angular Material)', () => {
     cy.get('input[name="name"]').type(mockUser.name);
     cy.get('input[name="email"]').type(mockUser.email);
     cy.get('input[name="phone"]').type(mockUser.phone);
+    cy.get('input[name="password"]').type('secret123');
 
-    // Click botón Crear
     cy.contains('button', 'Crear').click();
 
-    // Validar request enviada
+    // Validar request enviada (rol y estado por defecto)
     cy.wait('@createUser')
       .its('request.body')
-      .should('deep.equal', mockUser);
+      .should('deep.equal', { ...mockUser, password: 'secret123', role: 'viewer', status: 'active' });
 
     // Verificar redirección
-    cy.contains('Usuarios').should('be.visible');
+    cy.url().should('match', /\/users$/);
   });
 
   it('debe mostrar error si teléfono ya existe (409)', () => {
 
     // Sobrescribir mock POST para conflicto
-    cy.intercept('POST', '/users', {
+    cy.intercept('POST', '/api/users', {
       statusCode: 409,
-      body: { message: 'Phone already exists' }
+      body: { message: 'Teléfono ya existe' }
     }).as('createConflict');
 
     cy.get('input[name="name"]').type(mockUser.name);
     cy.get('input[name="email"]').type(mockUser.email);
     cy.get('input[name="phone"]').type(mockUser.phone);
+    cy.get('input[name="password"]').type('secret123');
 
     cy.contains('button', 'Crear').click();
 

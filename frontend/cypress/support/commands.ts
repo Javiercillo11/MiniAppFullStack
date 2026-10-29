@@ -1,37 +1,36 @@
 /// <reference types="cypress" />
-// ***********************************************
-// This example commands.ts shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-//
-//
-// -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
-//
-// declare global {
-//   namespace Cypress {
-//     interface Chainable {
-//       login(email: string, password: string): Chainable<void>
-//       drag(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       dismiss(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       visit(originalFn: CommandOriginalFn, url: string, options: Partial<VisitOptions>): Chainable<Element>
-//     }
-//   }
-// }
+
+// La sesión vive en cookies httpOnly del backend: en los tests se simula
+// mockeando los endpoints de auth (sin sesión previa al cargar la app).
+Cypress.Commands.add('mockNoSession', () => {
+  cy.intercept('GET', '/api/auth/me', { statusCode: 401, body: {} }).as('me');
+  cy.intercept('POST', '/api/auth/refresh', { statusCode: 401, body: {} }).as('refresh');
+});
+
+// Inicia sesión por la UI con el usuario indicado (admin por defecto)
+Cypress.Commands.add('loginAs', (overrides: Record<string, unknown> = {}) => {
+  cy.fixture('admin-user.json').then((admin) => {
+    const user = { ...admin, ...overrides };
+
+    cy.mockNoSession();
+    cy.intercept('POST', '/api/auth/login', { statusCode: 200, body: { ok: true, user } }).as('login');
+
+    cy.visit('/login');
+    cy.get('input[name="email"]').type(user.email);
+    cy.get('input[name="password"]').type('admin123');
+    cy.get('button[type="submit"]').click();
+    cy.wait('@login');
+  });
+});
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Cypress {
+    interface Chainable {
+      mockNoSession(): Chainable<void>;
+      loginAs(overrides?: Record<string, unknown>): Chainable<void>;
+    }
+  }
+}
+
+export {};

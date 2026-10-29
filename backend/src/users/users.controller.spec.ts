@@ -1,69 +1,75 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { JwtService } from '@nestjs/jwt';
+import { getModelToken } from '@nestjs/mongoose';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-}
-
-interface UsersServiceMock {
-  findAll: () => User[];
-  create: (dto: Omit<User, 'id'>) => User;
-  update: (id: number, dto: Omit<User, 'id'>) => User;
-  remove: (id: number) => { deleted: boolean };
-}
+import { User } from './schemas/user.schemas';
+import { Role, UserStatus } from './user-role.enum';
+import { AuthUser } from '../auth/auth-user.interface';
 
 describe('UsersController', () => {
   let controller: UsersController;
 
-  const mockUsersService: UsersServiceMock = {
-    findAll: jest.fn(() => [
-      { id: 1, name: 'Juan', email: 'juan@example.com', phone: '1234567890' },
-    ]),
-    create: jest.fn((dto) => ({ id: 1, ...dto })),
-    update: jest.fn((id, dto) => ({ id, ...dto })),
-    remove: jest.fn((id) => ({ deleted: true, id })),
+  const actor: AuthUser = {
+    id: 'admin',
+    email: 'admin@miniapp.local',
+    name: 'Admin',
+    role: Role.Admin,
+  };
+
+  const mockUsersService = {
+    findAll: jest.fn(() => [{ _id: '1', name: 'Juan' }]),
+    create: jest.fn(),
+    update: jest.fn(),
+    setStatus: jest.fn(),
+    remove: jest.fn(() => ({ ok: true })),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
-      providers: [{ provide: UsersService, useValue: mockUsersService }],
+      providers: [
+        { provide: UsersService, useValue: mockUsersService },
+        { provide: JwtService, useValue: {} },
+        { provide: getModelToken(User.name), useValue: {} },
+      ],
     }).compile();
 
     controller = module.get<UsersController>(UsersController);
   });
 
   it('debe devolver todos los usuarios', () => {
-    expect(controller.findAll()).toEqual([
-      { id: 1, name: 'Juan', email: 'juan@example.com', phone: '1234567890' },
-    ]);
-    expect(mockUsersService.findAll).toHaveBeenCalled();
+    expect(controller.findAll()).toEqual([{ _id: '1', name: 'Juan' }]);
   });
 
-  it('debe crear un usuario', () => {
-    const dto = { name: 'Pedro', email: 'p@example.com', phone: '111222333' };
-    expect(controller.create(dto)).toEqual({ id: 1, ...dto });
-    expect(mockUsersService.create).toHaveBeenCalledWith(dto);
-  });
-
-  it('debe actualizar un usuario', () => {
+  it('debe crear un usuario pasando el usuario autenticado', async () => {
     const dto = {
-      name: 'Pedro Editado',
-      email: 'p2@example.com',
-      phone: '999888777',
+      name: 'Pedro',
+      email: 'p@example.com',
+      phone: '111222333',
+      password: 'secret123',
     };
-    const res = controller.update(1, dto);
-    expect(res).toEqual({ id: 1, ...dto });
-    expect(mockUsersService.update).toHaveBeenCalledWith(1, dto);
+    await controller.create(dto, actor);
+    expect(mockUsersService.create).toHaveBeenCalledWith(dto, actor);
+  });
+
+  it('debe actualizar un usuario', async () => {
+    const dto = { name: 'Pedro', email: 'p@example.com', phone: '1' };
+    await controller.update('1', dto, actor);
+    expect(mockUsersService.update).toHaveBeenCalledWith('1', dto, actor);
+  });
+
+  it('debe cambiar el estado', async () => {
+    await controller.setStatus('1', { status: UserStatus.Inactive }, actor);
+    expect(mockUsersService.setStatus).toHaveBeenCalledWith(
+      '1',
+      UserStatus.Inactive,
+      actor,
+    );
   });
 
   it('debe eliminar un usuario', () => {
-    const res = controller.remove(1);
-    expect(res).toEqual({ deleted: true, id: 1 });
-    expect(mockUsersService.remove).toHaveBeenCalledWith(1);
+    expect(controller.remove('1', actor)).toEqual({ ok: true });
+    expect(mockUsersService.remove).toHaveBeenCalledWith('1', actor);
   });
 });

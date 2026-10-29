@@ -1,52 +1,169 @@
-<div class="form-container">
-  <mat-card class="form-card">
+<a class="back" routerLink="/users">
+  <mat-icon>arrow_back</mat-icon>
+  Volver a usuarios
+</a>
 
-    <h2>{{ isEdit ? 'Editar Usuario' : 'Crear Usuario' }}</h2>
+<div class="page-header">
+  <div>
+    <h1>{{ isEdit ? 'Editar usuario' : 'Crear usuario' }}</h1>
+    <p>
+      {{ isEdit
+        ? 'Actualiza los datos del usuario y guarda los cambios.'
+        : 'Completa los datos para dar de alta un nuevo usuario.' }}
+    </p>
+  </div>
+</div>
 
-    <form (ngSubmit)="save()">
+<form class="panel form" #userForm="ngForm" (ngSubmit)="save(userForm)" novalidate>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Nombre</mat-label>
-        <input
-          matInput
-          [(ngModel)]="user.name"
-          name="name"
-          required
-        />
-      </mat-form-field>
+  <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Email</mat-label>
-        <input
-          matInput
-          type="email"
-          [(ngModel)]="user.email"
-          name="email"
-          required
-        />
-      </mat-form-field>
+  <div class="section">
+    <div class="section-intro">
+      <h2>Información personal</h2>
+      <p>Datos de identificación y contacto. El teléfono debe ser único.</p>
+    </div>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Teléfono</mat-label>
-        <input
-          matInput
-          [(ngModel)]="user.phone"
-          name="phone"
-          required
-        />
-      </mat-form-field>
-
-      <div class="actions">
-        <button mat-raised-button color="primary" type="submit">
-          {{ isEdit ? 'Actualizar' : 'Crear' }}
-        </button>
-
-        <button mat-button type="button" (click)="cancel()">
-          Cancelar
-        </button>
+    <div class="fields">
+      <div class="field span-2">
+        <label for="name">Nombre completo</label>
+        <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+          <mat-icon matPrefix>badge</mat-icon>
+          <input
+            matInput
+            id="name"
+            [(ngModel)]="user.name"
+            name="name"
+            placeholder="Ej. Ana García"
+            required
+          />
+          <mat-error>El nombre es obligatorio</mat-error>
+        </mat-form-field>
       </div>
 
-    </form>
+      <div class="field">
+        <label for="email">Email</label>
+        <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+          <mat-icon matPrefix>mail</mat-icon>
+          <input
+            matInput
+            id="email"
+            type="email"
+            [(ngModel)]="user.email"
+            name="email"
+            #email="ngModel"
+            placeholder="nombre@empresa.com"
+            required
+            email
+          />
+          <mat-error *ngIf="email.hasError('required')">El email es obligatorio</mat-error>
+          <mat-error *ngIf="email.hasError('email')">Introduce un email válido</mat-error>
+        </mat-form-field>
+      </div>
 
-  </mat-card>
-</div>
+      <div class="field">
+        <label for="phone">Teléfono</label>
+        <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+          <mat-icon matPrefix>call</mat-icon>
+          <input
+            matInput
+            id="phone"
+            type="tel"
+            [(ngModel)]="user.phone"
+            name="phone"
+            placeholder="600 000 000"
+            required
+          />
+          <mat-error>El teléfono es obligatorio</mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+
+  <div class="section section-divider">
+    <div class="section-intro">
+      <h2>Acceso y permisos</h2>
+      <p>Credenciales de inicio de sesión y nivel de acceso a la aplicación.</p>
+    </div>
+
+    <div class="fields">
+      <div class="field span-2">
+        <label for="password">{{ isEdit ? 'Nueva contraseña' : 'Contraseña' }}</label>
+        <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+          <mat-icon matPrefix>lock</mat-icon>
+          <input
+            matInput
+            id="password"
+            [type]="hidePassword ? 'password' : 'text'"
+            [(ngModel)]="password"
+            name="password"
+            #passwordModel="ngModel"
+            autocomplete="new-password"
+            [placeholder]="isEdit ? 'Déjala vacía para mantener la actual' : 'Mínimo 8 caracteres'"
+            [required]="!isEdit"
+            minlength="8"
+          />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            [attr.aria-label]="hidePassword ? 'Mostrar contraseña' : 'Ocultar contraseña'"
+            (click)="hidePassword = !hidePassword"
+          >
+            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-hint *ngIf="password && !isSelf">El usuario deberá cambiarla en su próximo acceso</mat-hint>
+          <mat-error *ngIf="passwordModel.hasError('required')">La contraseña es obligatoria</mat-error>
+          <mat-error *ngIf="passwordModel.hasError('minlength')">Debe tener al menos 8 caracteres</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="field">
+        <label for="role">Rol</label>
+        <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+          <mat-icon matPrefix>shield_person</mat-icon>
+          <mat-select id="role" [(ngModel)]="user.role" name="role" [disabled]="isSelf">
+            <mat-option *ngFor="let role of availableRoles" [value]="role">
+              {{ roleLabels[role] }}
+            </mat-option>
+          </mat-select>
+          <mat-hint *ngIf="isSelf">No puedes cambiar tu propio rol</mat-hint>
+        </mat-form-field>
+        <p class="role-help">{{ roleHelp[user.role ?? 'viewer'] }}</p>
+      </div>
+
+      <div class="field">
+        <label>Estado</label>
+        <div class="status-box" [class.disabled]="!canChangeStatus">
+          <div>
+            <span class="status-title">{{ user.status === 'active' ? 'Activo' : 'Inactivo' }}</span>
+            <span class="status-desc">
+              {{ !canChangeStatus
+                ? 'Solo un administrador puede cambiarlo'
+                : user.status === 'active' ? 'Puede iniciar sesión' : 'No puede iniciar sesión' }}
+            </span>
+          </div>
+          <mat-slide-toggle
+            name="status"
+            aria-label="Usuario activo"
+            [checked]="user.status === 'active'"
+            [disabled]="!canChangeStatus"
+            (change)="user.status = $event.checked ? 'active' : 'inactive'"
+          ></mat-slide-toggle>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button mat-stroked-button type="button" (click)="cancel()">
+      Cancelar
+    </button>
+
+    <button mat-flat-button type="submit" [disabled]="saving">
+      <mat-icon>{{ isEdit ? 'save' : 'person_add' }}</mat-icon>
+      {{ isEdit ? 'Guardar cambios' : 'Crear usuario' }}
+    </button>
+  </div>
+
+</form>

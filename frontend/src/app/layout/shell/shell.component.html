@@ -1,0 +1,91 @@
+<mat-sidenav-container class="shell">
+
+  <mat-sidenav
+    #sidenav
+    class="sidebar"
+    [mode]="isMobile() ? 'over' : 'side'"
+    [opened]="!isMobile()"
+    [fixedInViewport]="isMobile()"
+  >
+    <div class="brand">
+      <div class="brand-mark">
+        <mat-icon>hub</mat-icon>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">MiniApp</span>
+        <span class="brand-sub">Panel de administración</span>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <span class="nav-label">Gestión</span>
+      <a
+        class="nav-item"
+        routerLink="/users"
+        routerLinkActive="active"
+        (click)="isMobile() && sidenav.close()"
+      >
+        <mat-icon>group</mat-icon>
+        <span>Usuarios</span>
+      </a>
+    </nav>
+
+    <div class="theme-switch" role="radiogroup" aria-label="Tema">
+      <button
+        *ngFor="let option of themeOptions"
+        type="button"
+        role="radio"
+        class="theme-option"
+        [class.selected]="theme.mode() === option.mode"
+        [attr.aria-checked]="theme.mode() === option.mode"
+        [attr.aria-label]="option.label"
+        [matTooltip]="option.label"
+        (click)="theme.setMode(option.mode)"
+      >
+        <mat-icon>{{ option.icon }}</mat-icon>
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="profile">
+        <div class="avatar">{{ initials() }}</div>
+        <div class="profile-text">
+          <span class="profile-name" [title]="user()?.email">{{ user()?.name }}</span>
+          <span class="profile-role">{{ roleLabel() }}</span>
+        </div>
+      </div>
+      <a
+        mat-icon-button
+        class="footer-action"
+        routerLink="/change-password"
+        matTooltip="Cambiar contraseña"
+        aria-label="Cambiar contraseña"
+      >
+        <mat-icon>key</mat-icon>
+      </a>
+      <button
+        mat-icon-button
+        class="footer-action"
+        matTooltip="Cerrar sesión"
+        aria-label="Cerrar sesión"
+        (click)="logout()"
+      >
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="content">
+    <header class="topbar" *ngIf="isMobile()">
+      <button mat-icon-button aria-label="Abrir menú" (click)="sidenav.open()">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span class="topbar-title">MiniApp</span>
+    </header>
+
+    <main class="main">
+      <router-outlet></router-outlet>
+    </main>
+  </mat-sidenav-content>
+
+</mat-sidenav-container>

@@ -1,48 +1,95 @@
-<div class="login-container">
-  <mat-card class="login-card">
-    <h2>Login</h2>
+<div class="login">
 
-    <form (ngSubmit)="login()">
+  <aside class="brand-panel">
+    <div class="brand">
+      <div class="brand-mark"><mat-icon>hub</mat-icon></div>
+      <span>MiniApp</span>
+    </div>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Usuario</mat-label>
-        <input
-          matInput
-          [(ngModel)]="username"
-          name="username"
-          required
-        />
-        <mat-icon matSuffix>person</mat-icon>
-      </mat-form-field>
+    <div class="pitch">
+      <h1>Gestiona tu equipo desde un único lugar.</h1>
+      <p>Alta, edición y control de usuarios con una interfaz rápida, clara y segura.</p>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Contraseña</mat-label>
-        <input
-          matInput
-          [type]="hide ? 'password' : 'text'"
-          [(ngModel)]="password"
-          name="password"
-          required
-        />
+      <ul class="features">
+        <li><mat-icon>bolt</mat-icon> Operaciones CRUD en tiempo real</li>
+        <li><mat-icon>verified_user</mat-icon> Validación de datos de negocio</li>
+        <li><mat-icon>devices</mat-icon> Diseño adaptado a cualquier dispositivo</li>
+      </ul>
+    </div>
+
+    <span class="legal">© {{ year }} MiniApp FullStack</span>
+  </aside>
+
+  <section class="form-panel">
+    <div class="form-wrap">
+      <header>
+        <h2>Iniciar sesión</h2>
+        <p>Introduce tus credenciales para acceder al panel.</p>
+      </header>
+
+      <div class="alert" *ngIf="error" role="alert">
+        <mat-icon>error</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+
+      <form #loginForm="ngForm" (ngSubmit)="login(loginForm)" novalidate>
+
+        <label class="field-label" for="email">Email</label>
+        <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+          <mat-icon matPrefix>mail</mat-icon>
+          <input
+            matInput
+            id="email"
+            type="email"
+            [(ngModel)]="email"
+            name="email"
+            #emailModel="ngModel"
+            placeholder="nombre@empresa.com"
+            autocomplete="username"
+            required
+            email
+          />
+          <mat-error *ngIf="emailModel.hasError('required')">El email es obligatorio</mat-error>
+          <mat-error *ngIf="emailModel.hasError('email')">Introduce un email válido</mat-error>
+        </mat-form-field>
+
+        <label class="field-label" for="password">Contraseña</label>
+        <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+          <mat-icon matPrefix>lock</mat-icon>
+          <input
+            matInput
+            id="password"
+            [type]="hide ? 'password' : 'text'"
+            [(ngModel)]="password"
+            name="password"
+            placeholder="Tu contraseña"
+            autocomplete="current-password"
+            required
+          />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            [attr.aria-label]="hide ? 'Mostrar contraseña' : 'Ocultar contraseña'"
+            (click)="hide = !hide"
+          >
+            <mat-icon>{{ hide ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error>La contraseña es obligatoria</mat-error>
+        </mat-form-field>
+
         <button
-          mat-icon-button
-          matSuffix
-          type="button"
-          (click)="hide = !hide"
+          mat-flat-button
+          type="submit"
+          class="submit full-width"
+          [disabled]="loading"
         >
-          <mat-icon>{{ hide ? 'visibility_off' : 'visibility' }}</mat-icon>
+          <mat-spinner *ngIf="loading" diameter="18"></mat-spinner>
+          <span *ngIf="!loading">Entrar</span>
         </button>
-      </mat-form-field>
 
-      <button
-        mat-raised-button
-        color="primary"
-        type="submit"
-        class="full-width"
-      >
-        Entrar
-      </button>
+      </form>
+    </div>
+  </section>
 
-    </form>
-  </mat-card>
 </div>

@@ -1,23 +1,24 @@
-# Imagen base
-FROM node:18-alpine
-
-# Directorio de trabajo
+# -------- BUILD STAGE --------
+FROM node:22-alpine AS build
 WORKDIR /app
 
-# Copiar dependencias
 COPY package*.json ./
+RUN npm ci
 
-# Instalar dependencias
-RUN npm install
-
-# Copiar el resto del código
 COPY . .
+RUN npm run build && npm prune --omit=dev
 
-# Compilar NestJS
-RUN npm run build
+# -------- RUNTIME STAGE --------
+FROM node:22-alpine
+ENV NODE_ENV=production
+WORKDIR /app
 
-# Exponer puerto
+COPY --from=build --chown=node:node /app/package*.json ./
+COPY --from=build --chown=node:node /app/node_modules ./node_modules
+COPY --from=build --chown=node:node /app/dist ./dist
+
+# Sin privilegios de root
+USER node
 EXPOSE 3000
 
-# Comando de arranque
-CMD ["npm", "run", "start:prod"]
+CMD ["node", "dist/main.js"]

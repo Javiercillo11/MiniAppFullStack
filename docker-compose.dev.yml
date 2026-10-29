@@ -1,0 +1,12 @@
+# Desarrollo local: expone MongoDB y el backend solo en la máquina (127.0.0.1)
+# para arrancar el backend con `npm run start:dev`, ejecutar los tests e2e
+# o llamar a la API directamente.
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+services:
+  mongo:
+    ports:
+      - '127.0.0.1:27017:27017'
+
+  backend:
+    ports:
+      - '127.0.0.1:${BACKEND_PORT:-3000}:3000'

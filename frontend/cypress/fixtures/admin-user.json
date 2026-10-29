@@ -1,0 +1,9 @@
+{
+  "_id": "admin-id",
+  "name": "Administrador",
+  "email": "admin@miniapp.local",
+  "phone": "000000000",
+  "role": "admin",
+  "status": "active",
+  "mustChangePassword": false
+}

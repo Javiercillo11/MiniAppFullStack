@@ -1,74 +1,191 @@
-<mat-toolbar color="primary">
-  <span>Panel de Usuarios</span>
-  <span class="spacer"></span>
-
-  <button mat-button (click)="logout()">
-    <mat-icon>logout</mat-icon>
-    Logout
-  </button>
-</mat-toolbar>
-
-<mat-card class="users-card">
-
-  <div class="header">
-    <h2>Usuarios</h2>
-
-    <button mat-raised-button color="primary" (click)="createUser()">
-      <mat-icon>add</mat-icon>
-      Nuevo Usuario
-    </button>
+<div class="page-header">
+  <div>
+    <h1>Usuarios</h1>
+    <p>Consulta, crea y administra los usuarios registrados.</p>
   </div>
 
-  <table mat-table [dataSource]="users" class="mat-elevation-z2">
+  <button mat-flat-button *ngIf="auth.canManage()" (click)="createUser()">
+    <mat-icon>add</mat-icon>
+    Crear usuario
+  </button>
+</div>
 
-    <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef>Nombre</th>
-      <td mat-cell *matCellDef="let user">{{ user.name }}</td>
-    </ng-container>
+<section class="panel">
 
-    <ng-container matColumnDef="email">
-      <th mat-header-cell *matHeaderCellDef>Email</th>
-      <td mat-cell *matCellDef="let user">{{ user.email }}</td>
-    </ng-container>
+  <div class="toolbar">
+    <div class="search">
+      <mat-icon>search</mat-icon>
+      <input
+        type="search"
+        placeholder="Buscar por nombre, email o teléfono"
+        aria-label="Buscar usuarios"
+        (input)="setSearch($event)"
+      />
+    </div>
 
-    <ng-container matColumnDef="phone">
-      <th mat-header-cell *matHeaderCellDef>Teléfono</th>
-      <td mat-cell *matCellDef="let user">{{ user.phone }}</td>
-    </ng-container>
+    <div class="toolbar-end">
+      <mat-button-toggle-group
+        class="status-filter"
+        hideSingleSelectionIndicator
+        aria-label="Filtrar por estado"
+        [value]="statusFilter"
+        (change)="setStatusFilter($event.value)"
+      >
+        <mat-button-toggle value="all">Todos</mat-button-toggle>
+        <mat-button-toggle value="active">Activos</mat-button-toggle>
+        <mat-button-toggle value="inactive">Inactivos</mat-button-toggle>
+      </mat-button-toggle-group>
 
-    <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef>Acciones</th>
-      <td mat-cell *matCellDef="let user">
+      <span class="count">
+        {{ dataSource.filteredData.length }}
+        {{ dataSource.filteredData.length === 1 ? 'usuario' : 'usuarios' }}
+      </span>
+    </div>
+  </div>
 
-        <button mat-icon-button color="primary" (click)="editUser(user)">
-          <mat-icon>edit</mat-icon>
-        </button>
+  <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
-        <button mat-icon-button color="warn" (click)="deleteUser(user)">
-          <mat-icon>delete</mat-icon>
-        </button>
+  <div class="table-wrap">
+    <table mat-table [dataSource]="dataSource">
 
-      </td>
-    </ng-container>
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Nombre</th>
+        <td mat-cell *matCellDef="let user">
+          <div class="user-cell">
+            <span class="avatar" [style.background]="avatarColor(user.name)">
+              {{ initials(user.name) }}
+              <span class="avatar-dot" [class.inactive]="user.status !== 'active'"></span>
+            </span>
+            <div class="user-text">
+              <span class="user-name">
+                {{ user.name }}
+                <span class="you" *ngIf="isSelf(user)">Tú</span>
+              </span>
+              <span class="user-sub">{{ user.email }}</span>
+            </div>
+          </div>
+        </td>
+      </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef class="col-detail">Email</th>
+        <td mat-cell *matCellDef="let user" class="muted col-detail">{{ user.email }}</td>
+      </ng-container>
 
-  </table>
+      <ng-container matColumnDef="phone">
+        <th mat-header-cell *matHeaderCellDef class="col-detail">Teléfono</th>
+        <td mat-cell *matCellDef="let user" class="muted mono col-detail">{{ user.phone }}</td>
+      </ng-container>
 
-</mat-card>
+      <ng-container matColumnDef="role">
+        <th mat-header-cell *matHeaderCellDef class="col-detail">Rol</th>
+        <td mat-cell *matCellDef="let user" class="col-detail">
+          <span class="badge" [ngClass]="'role-' + user.role">{{ roleLabel(user) }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef class="col-detail">Estado</th>
+        <td mat-cell *matCellDef="let user" class="col-detail">
+          <span class="status" [class.inactive]="user.status !== 'active'">
+            {{ user.status === 'active' ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef class="actions-col">
+          <span class="sr-only">Acciones</span>
+        </th>
+        <td mat-cell *matCellDef="let user" class="actions-col">
+          <div class="actions">
+            <button
+              mat-icon-button
+              *ngIf="canEdit(user)"
+              matTooltip="Editar"
+              [attr.aria-label]="'Editar ' + user.name"
+              (click)="editUser(user)"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+
+            <ng-container *ngIf="canAdminister(user)">
+              <button
+                mat-icon-button
+                matTooltip="Más acciones"
+                [attr.aria-label]="'Más acciones para ' + user.name"
+                [matMenuTriggerFor]="rowMenu"
+              >
+                <mat-icon>more_vert</mat-icon>
+              </button>
+
+              <mat-menu #rowMenu="matMenu" xPosition="before">
+                <button mat-menu-item (click)="toggleStatus(user)">
+                  <mat-icon>{{ user.status === 'active' ? 'block' : 'check_circle' }}</mat-icon>
+                  <span>{{ user.status === 'active' ? 'Desactivar' : 'Activar' }}</span>
+                </button>
+                <button mat-menu-item class="danger-item" (click)="deleteUser(user)">
+                  <mat-icon>delete</mat-icon>
+                  <span>Eliminar</span>
+                </button>
+              </mat-menu>
+            </ng-container>
+            <span class="action-slot" *ngIf="!canAdminister(user)"></span>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr
+        mat-row
+        *matRowDef="let row; columns: displayedColumns;"
+        [class.row-inactive]="row.status !== 'active'"
+      ></tr>
+
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+          <div class="empty" *ngIf="!loading">
+            <div class="empty-icon">
+              <mat-icon>{{ isFiltering ? 'search_off' : 'group_add' }}</mat-icon>
+            </div>
+            <ng-container *ngIf="isFiltering; else noUsers">
+              <h3>Sin resultados</h3>
+              <p>No hay usuarios que coincidan con los filtros aplicados.</p>
+            </ng-container>
+            <ng-template #noUsers>
+              <h3>Todavía no hay usuarios</h3>
+              <p>Crea el primer usuario para empezar.</p>
+            </ng-template>
+          </div>
+        </td>
+      </tr>
+
+    </table>
+  </div>
+
+</section>
 
 <ng-template #confirmDialog>
-  <h2 mat-dialog-title>Confirmar eliminación</h2>
+  <div class="confirm">
+    <div class="confirm-icon">
+      <mat-icon>warning</mat-icon>
+    </div>
 
-  <mat-dialog-content>
-    <p>¿Deseas eliminar a <strong>{{ selectedUser?.name }}</strong>?</p>
-  </mat-dialog-content>
+    <h2 mat-dialog-title>Eliminar usuario</h2>
 
-  <mat-dialog-actions align="end">
-    <button mat-button (click)="dialog.closeAll()">No</button>
-    <button mat-raised-button color="warn" (click)="confirmDelete()">
-      Sí
-    </button>
-  </mat-dialog-actions>
+    <mat-dialog-content>
+      <p>
+        ¿Seguro que deseas eliminar a <strong>{{ selectedUser.name }}</strong>?
+        Esta acción no se puede deshacer. Si solo quieres impedir su acceso,
+        puedes desactivarlo.
+      </p>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+      <button mat-stroked-button mat-dialog-close>Cancelar</button>
+      <button mat-flat-button class="btn-danger" (click)="confirmDelete()">
+        Eliminar
+      </button>
+    </mat-dialog-actions>
+  </div>
 </ng-template>

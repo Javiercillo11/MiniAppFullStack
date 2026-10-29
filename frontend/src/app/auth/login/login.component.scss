@@ -1,17 +1,184 @@
-.login-container {
-  height: 100vh;
+.login {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  background: var(--app-surface);
+
+  @media (max-width: 959px) { grid-template-columns: 1fr; }
+}
+
+// ---------------- Panel de marca ----------------
+.brand-panel {
+  position: relative;
+  overflow: hidden;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 48px 56px;
+  color: #e2e8f0;
+  background:
+    radial-gradient(circle at 85% 10%, rgba(96, 165, 250, 0.22), transparent 45%),
+    radial-gradient(circle at 10% 95%, rgba(31, 95, 191, 0.35), transparent 50%),
+    var(--app-sidebar);
+
+  // Retícula sutil de fondo
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: linear-gradient(to bottom, #000, transparent 85%);
+    pointer-events: none;
+  }
+
+  > * { position: relative; }
+
+  @media (max-width: 959px) {
+    padding: 28px 24px;
+    gap: 20px;
+
+    .features, .legal { display: none; }
+    .pitch h1 { font-size: 1.5rem; }
+  }
+}
+
+.brand {
+  display: flex;
   align-items: center;
-  background: #f5f5f5;
+  gap: 12px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.125rem;
 }
 
-.login-card {
-  width: 400px;
-  padding: 2rem;
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--app-radius-sm);
+  display: grid;
+  place-items: center;
+  background: var(--app-primary);
 }
 
-.full-width {
+.pitch {
+  max-width: 460px;
+
+  h1 {
+    color: #fff;
+    font-size: 2.25rem;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 16px 0 0;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #94a3b8;
+  }
+}
+
+.features {
+  list-style: none;
+  padding: 0;
+  margin: 32px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9375rem;
+  }
+
+  mat-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--app-radius-sm);
+    background: rgba(96, 165, 250, 0.14);
+    color: #93c5fd;
+  }
+}
+
+.legal {
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+// ---------------- Panel del formulario ----------------
+.form-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+}
+
+.form-wrap {
   width: 100%;
-  margin-bottom: 1rem;
+  max-width: 380px;
+
+  header { margin-bottom: 28px; }
+
+  h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  header p {
+    margin: 8px 0 0;
+    color: var(--app-text-muted);
+  }
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--app-text);
+}
+
+mat-form-field { margin-bottom: 18px; }
+
+mat-icon[matPrefix] {
+  margin: 0 4px 0 12px;
+  color: var(--app-text-muted);
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  border-radius: var(--app-radius-sm);
+  background: var(--app-danger-soft);
+  color: var(--app-danger);
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+}
+
+.submit {
+  height: 46px;
+  margin-top: 8px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+
+  mat-spinner { margin: 0 auto; }
 }
